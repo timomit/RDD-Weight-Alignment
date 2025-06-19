@@ -68,6 +68,7 @@ criterion = torch.nn.CrossEntropyLoss()
 optimizer = torch.optim.SGD(net.parameters(), lr=lr, momentum=momentum, weight_decay=weight_decay)
 
 def train(epoch):
+    print("DEB: main: train")
     print("\nEpoch {}.".format(epoch))
 
     net.train()
@@ -98,6 +99,7 @@ def train(epoch):
     return 100*(1 - correct/total), train_loss
 
 def test(epoch, train_set=False):
+    print("DEB: main: test")
     net.eval()
 
     loss      = 0
@@ -167,6 +169,8 @@ info_losses   = [ [] for i in range(3) ]
 corr_percents = [ [] for i in range(3) ]
 
 def train_fb():
+
+    print("DEB: main: train_fb")
     rdd_net.reset()
 
     rdd_net.copy_weights_from([net.conv1, net.conv2, net.fc1, net.fc2, net.fc3])
@@ -342,11 +346,14 @@ correct_1  = np.zeros(n_epochs+1)
 # test_err[0], test_cost[0]   = test(-1)
 # train_err[0], train_cost[0] = test(-1, train_set=True)
 
+print("DEB: main: main loop")
 for epoch in range(n_epochs):
     if do_rdd and (rdd_every_epoch or epoch == 0):
+        print("DEB: main: for RDD")
         train_fb()
 
     if (not do_rdd) and (not use_backprop):
+        print("DEB: main: for feedback alignment")
         # for feedback alignment, measure weight symmetry every epoch
         for i in range(3):
             if i == 0:
@@ -419,6 +426,8 @@ for epoch in range(n_epochs):
 
 # Measure weight symmetry one final time
 if do_rdd and rdd_every_epoch:
+
+    print("DEB: main: post main loop")
     for i in range(3):
         if i == 0:
             layer = net.fc1
@@ -453,7 +462,7 @@ if do_rdd and rdd_every_epoch:
         if folder is not None:
             np.save(os.path.join(folder, "weight_{}.npy".format(i+1)), weight)
             np.save(os.path.join(folder, "fb_weight_{}.npy".format(i+1)), fb_weight)
-            np.save(os.path.join(folder, "beta_{}.npy".format(i+1)), beta)
+            # np.save(os.path.join(folder, "beta_{}.npy".format(i+1)), beta)
 
     if folder is not None:
         np.save(os.path.join(folder, "correct_1.npy"), np.array(corr_percents[0]))
